@@ -1,4 +1,6 @@
 import time
+
+import numpy
 import requests
 import config
 import cv2
@@ -9,6 +11,12 @@ from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 
 WAIT_TIME = 2
+
+
+def variance_of_laplacian(image):
+    # compute the Laplacian of the image and then return the focus
+    # measure, which is simply the variance of the Laplacian
+    return cv2.Laplacian(image, cv2.CV_64F).var()
 
 
 def main():
@@ -47,7 +55,7 @@ def main():
         s.cookies.set(cookie['name'], cookie['value'])
 
     # Loop through the catalog of images
-    for _ in range(50):
+    for _ in range(500):
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
@@ -57,12 +65,20 @@ def main():
             img = div_tag.find_element_by_tag_name('img')
             img_src = img.get_attribute('src')
             response = s.get(img_src)
-            img = Image.open(BytesIO(response.content))
-            print(img.size)
+
+            pil_img = Image.open(BytesIO(response.content)).convert('RGB')
+            opencv_image = cv2.cvtColor(numpy.array(pil_img), cv2.COLOR_RGB2BGR)
+            gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
+
+            fm = variance_of_laplacian(gray)
+            descriptor = ''
+            if fm < 100:
+                descriptor = 'BLUR'
+            print(f'Image: {pil_img.size} {fm} {descriptor}')
+
             time.sleep(1)
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
 
 
 if __name__ == '__main__':
     main()
-
