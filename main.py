@@ -1,17 +1,19 @@
 import time
-from io import BytesIO
-
 import requests
+import config
+import cv2
+
+from io import BytesIO
 from PIL import Image
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
-
-import config
 
 WAIT_TIME = 2
 
 
 def main():
+    # Check CV2 version
+    print(f'OpenCV Version {cv2.__version__}')
     # Setup the web driver
     driver = webdriver.Safari()
     driver.get('https://lightroom.adobe.com/signin')
