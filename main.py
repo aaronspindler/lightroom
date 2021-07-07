@@ -1,4 +1,5 @@
 import time
+import uuid
 
 import numpy
 import requests
@@ -55,7 +56,12 @@ def main():
         s.cookies.set(cookie['name'], cookie['value'])
 
     # Loop through the catalog of images
-    for _ in range(500):
+    # Find the number of images
+    countlabel = driver.find_element_by_class_name('countlabel').text
+    num_images = int(countlabel.split(' ')[2])
+    print(f'Found {num_images} images')
+
+    for _ in range(num_images):
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
@@ -69,18 +75,23 @@ def main():
             pil_img = Image.open(BytesIO(response.content)).convert('RGB')
             height, width = pil_img.size
 
+            # left, top, right, bottom
             top_left_quad = pil_img.crop((0, 0, width/2, height/2))
             top_right_quad = pil_img.crop((width/2, 0, width, height/2))
             bottom_left_quad = pil_img.crop((0, height/2, width/2, height))
             bottom_right_quad = pil_img.crop((width/2, height/2, width, height))
+            center = pil_img.crop((width/8, height/8, (width/8)*7, (height/8)*7))
 
-            quads = [top_left_quad, top_right_quad, bottom_left_quad, bottom_right_quad]
+            quads = [top_left_quad, top_right_quad, bottom_left_quad, bottom_right_quad, center]
 
             sum = 0
+            vols = ''
             for quad in quads:
                 opencv_image = cv2.cvtColor(numpy.array(quad), cv2.COLOR_RGB2BGR)
                 gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
-                sum += variance_of_laplacian(gray)
+                vol = variance_of_laplacian(gray)
+                sum += vol
+                vols = vols + str(vol) + ' '
 
             avg = sum/len(quads)
 
@@ -91,9 +102,9 @@ def main():
             descriptor = ''
             if fm < 100:
                 descriptor = 'BLUR'
+                pil_img.save(f'/Users/aaronspindler/Desktop/blur-detected/{uuid.uuid4().hex}.jpg', 'JPEG')
             print(f'Image: {pil_img.size} {fm}:{avg} {descriptor}')
 
-            time.sleep(1)
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
 
 
