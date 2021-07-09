@@ -61,7 +61,9 @@ def main():
     num_images = int(countlabel.split(' ')[2])
     print(f'Found {num_images} images')
 
-    for _ in range(num_images):
+    #for _ in range(num_images):
+    for _ in range(10000):
+        time.sleep(0.5)
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
@@ -102,8 +104,9 @@ def main():
             descriptor = ''
             if fm < 100:
                 descriptor = 'BLUR'
-                pil_img.save(f'/Users/aaronspindler/Desktop/blur-detected/{uuid.uuid4().hex}.jpg', 'JPEG')
+                pil_img.save(f'/Users/aaronspindler/Desktop/lightroom-blur/images/blur/{uuid.uuid4().hex}.jpg', 'JPEG')
             print(f'Image: {pil_img.size} {fm}:{avg} {descriptor}')
+
 
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
 
