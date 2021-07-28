@@ -1,15 +1,18 @@
 import time
 import uuid
-
-import numpy
-import requests
-import config
-import cv2
-
 from io import BytesIO
+
+import PIL
+import coremltools as ct
+import cv2
+import numpy
+import numpy as np
+import requests
 from PIL import Image
-from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
+import config
 
 WAIT_TIME = 2
 
@@ -20,9 +23,16 @@ def variance_of_laplacian(image):
     return cv2.Laplacian(image, cv2.CV_64F).var()
 
 
+def load_img_for_model(img):
+    img = img.resize((299, 299), PIL.Image.ANTIALIAS)
+    img_np = np.array(img).astype(np.float32)
+    return img_np, img
+
+
 def main():
-    # Check CV2 version
-    print(f'OpenCV Version {cv2.__version__}')
+    # Load the Image Model
+    model = ct.models.MLModel('BlurDetection.mlmodel')
+
     # Setup the web driver
     driver = webdriver.Safari()
     driver.get('https://lightroom.adobe.com/signin')
@@ -61,7 +71,7 @@ def main():
     num_images = int(countlabel.split(' ')[2])
     print(f'Found {num_images} images')
 
-    #for _ in range(num_images):
+    # for _ in range(num_images):
     for _ in range(10000):
         time.sleep(0.5)
         # Find the correct image
@@ -75,14 +85,20 @@ def main():
             response = s.get(img_src)
 
             pil_img = Image.open(BytesIO(response.content)).convert('RGB')
+
+            # Make Prediction with Ml model
+            _, img = load_img_for_model(pil_img)
+            prediction_result = model.predict({'image': img})
+            print(f'{prediction_result.get("classLabel")} with a probability of {round(prediction_result.get("classLabelProbs").get(prediction_result.get("classLabel")),2)*100}%')
+
             height, width = pil_img.size
 
             # left, top, right, bottom
-            top_left_quad = pil_img.crop((0, 0, width/2, height/2))
-            top_right_quad = pil_img.crop((width/2, 0, width, height/2))
-            bottom_left_quad = pil_img.crop((0, height/2, width/2, height))
-            bottom_right_quad = pil_img.crop((width/2, height/2, width, height))
-            center = pil_img.crop((width/8, height/8, (width/8)*7, (height/8)*7))
+            top_left_quad = pil_img.crop((0, 0, width / 2, height / 2))
+            top_right_quad = pil_img.crop((width / 2, 0, width, height / 2))
+            bottom_left_quad = pil_img.crop((0, height / 2, width / 2, height))
+            bottom_right_quad = pil_img.crop((width / 2, height / 2, width, height))
+            center = pil_img.crop((width / 8, height / 8, (width / 8) * 7, (height / 8) * 7))
 
             quads = [top_left_quad, top_right_quad, bottom_left_quad, bottom_right_quad, center]
 
@@ -95,7 +111,7 @@ def main():
                 sum += vol
                 vols = vols + str(vol) + ' '
 
-            avg = sum/len(quads)
+            avg = sum / len(quads)
 
             opencv_image = cv2.cvtColor(numpy.array(pil_img), cv2.COLOR_RGB2BGR)
             gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
@@ -104,9 +120,8 @@ def main():
             descriptor = ''
             if fm < 100:
                 descriptor = 'BLUR'
-                pil_img.save(f'/Users/aaronspindler/Desktop/lightroom-blur/images/blur/{uuid.uuid4().hex}.jpg', 'JPEG')
-            print(f'Image: {pil_img.size} {fm}:{avg} {descriptor}')
-
+                # pil_img.save(f'/Users/aaronspindler/Desktop/lightroom-blur/images/blur/{uuid.uuid4().hex}.jpg', 'JPEG') # Saves the blurry image to a folder with unique filename
+            # print(f'Image: {pil_img.size} {fm}:{avg} {descriptor}')
 
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
 
