@@ -113,11 +113,9 @@ def main():
 
     num_blurred = 0
     num_duplicate = 0
-    images = set()
+    images = {}
 
-    # for _ in range(num_images):
-    for _ in range(500):
-        time.sleep(0.05)
+    for _ in range(num_images):
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
@@ -135,9 +133,10 @@ def main():
             hash = img_hash(pil_img)
             if hash in images:
                 num_duplicate += 1
+                #driver.find_element_by_xpath('//*[@id="sneaky-loupe-rating"]/div/div[1]').click()  # Click the 1 star button so I can find duplicates
                 print(f'{num_duplicate} flagged as duplicate')
             else:
-                images.add(hash)
+                images[hash] = pil_img
 
             # Make Prediction with Ml model
             _, img = preprocess_img_for_ml_model(pil_img)
@@ -146,7 +145,7 @@ def main():
 
             if prediction_result.get('classLabel') == 'blurred':
                 num_blurred += 1
-                driver.find_element_by_xpath('//*[@id="sneaky-loupe-flag"]/div[2]').click()  # Click the flag as reject button
+                #driver.find_element_by_xpath('//*[@id="sneaky-loupe-flag"]/div[2]').click()  # Click the flag as reject button
                 print(f'{num_blurred} flagged as Blurred')
 
             # Make decision based on V o l quadrants
