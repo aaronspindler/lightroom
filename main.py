@@ -20,7 +20,33 @@ WAIT_TIME = 2
 def variance_of_laplacian(image):
     # compute the Laplacian of the image and then return the focus
     # measure, which is simply the variance of the Laplacian
-    return cv2.Laplacian(image, cv2.CV_64F).var()
+    opencv_image = cv2.cvtColor(numpy.array(image), cv2.COLOR_RGB2BGR)
+    gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
+    return cv2.Laplacian(gray, cv2.CV_64F).var()
+
+
+def variance_of_laplacian_quadrants(image):
+    height, width = image.size
+
+    # left, top, right, bottom
+    top_left_quad = image.crop((0, 0, width / 2, height / 2))
+    top_right_quad = image.crop((width / 2, 0, width, height / 2))
+    bottom_left_quad = image.crop((0, height / 2, width / 2, height))
+    bottom_right_quad = image.crop((width / 2, height / 2, width, height))
+    center = image.crop((width / 8, height / 8, (width / 8) * 7, (height / 8) * 7))
+
+    quads = [top_left_quad, top_right_quad, bottom_left_quad, bottom_right_quad, center]
+
+    sum = 0
+    vols = ''
+    for quad in quads:
+        vol = variance_of_laplacian(quad)
+        sum += vol
+        vols = vols + str(vol) + ' '
+
+    avg = sum / len(quads)
+
+    return avg
 
 
 def load_img_for_model(img):
@@ -71,8 +97,7 @@ def main():
     num_images = int(countlabel.split(' ')[2])
     print(f'Found {num_images} images')
 
-    # for _ in range(num_images):
-    for _ in range(10000):
+    for _ in range(num_images):
         time.sleep(0.5)
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
@@ -91,37 +116,15 @@ def main():
             prediction_result = model.predict({'image': img})
             print(f'{prediction_result.get("classLabel")} with a probability of {round(prediction_result.get("classLabelProbs").get(prediction_result.get("classLabel")),2)*100}%')
 
-            height, width = pil_img.size
+            # Make decision based on V o l quadrants
+            quadrants = variance_of_laplacian_quadrants(pil_img)
 
-            # left, top, right, bottom
-            top_left_quad = pil_img.crop((0, 0, width / 2, height / 2))
-            top_right_quad = pil_img.crop((width / 2, 0, width, height / 2))
-            bottom_left_quad = pil_img.crop((0, height / 2, width / 2, height))
-            bottom_right_quad = pil_img.crop((width / 2, height / 2, width, height))
-            center = pil_img.crop((width / 8, height / 8, (width / 8) * 7, (height / 8) * 7))
-
-            quads = [top_left_quad, top_right_quad, bottom_left_quad, bottom_right_quad, center]
-
-            sum = 0
-            vols = ''
-            for quad in quads:
-                opencv_image = cv2.cvtColor(numpy.array(quad), cv2.COLOR_RGB2BGR)
-                gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
-                vol = variance_of_laplacian(gray)
-                sum += vol
-                vols = vols + str(vol) + ' '
-
-            avg = sum / len(quads)
-
-            opencv_image = cv2.cvtColor(numpy.array(pil_img), cv2.COLOR_RGB2BGR)
-            gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
-
-            fm = variance_of_laplacian(gray)
+            # Make decision based on V o l
+            vol = variance_of_laplacian(pil_img)
             descriptor = ''
-            if fm < 100:
+            if vol < 100:
                 descriptor = 'BLUR'
                 # pil_img.save(f'/Users/aaronspindler/Desktop/lightroom-blur/images/blur/{uuid.uuid4().hex}.jpg', 'JPEG') # Saves the blurry image to a folder with unique filename
-            # print(f'Image: {pil_img.size} {fm}:{avg} {descriptor}')
 
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
 
