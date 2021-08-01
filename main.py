@@ -112,9 +112,12 @@ def main():
     print(f'Found {num_images} images')
 
     num_blurred = 0
+    num_duplicate = 0
+    images = set()
 
-    for _ in range(num_images):
-        time.sleep(0.25)
+    # for _ in range(num_images):
+    for _ in range(500):
+        time.sleep(0.05)
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
@@ -125,8 +128,16 @@ def main():
             img_src = img.get_attribute('src')
             response = s.get(img_src)
 
+            # Convert the response data into a PIL image
             pil_img = Image.open(BytesIO(response.content)).convert('RGB')
-            print(img_hash(pil_img))
+
+            # Compute the hash of the image
+            hash = img_hash(pil_img)
+            if hash in images:
+                num_duplicate += 1
+                print(f'{num_duplicate} flagged as duplicate')
+            else:
+                images.add(hash)
 
             # Make Prediction with Ml model
             _, img = preprocess_img_for_ml_model(pil_img)
@@ -151,6 +162,9 @@ def main():
                 # pil_img.save(f'/Users/aaronspindler/Desktop/lightroom-blur/images/blur/{uuid.uuid4().hex}.jpg', 'JPEG') # Saves the blurry image to a folder with unique filename
 
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
+
+    print(f'{num_blurred} blurry pictures')
+    print(f'{num_duplicate} duplicate pictures')
 
 
 if __name__ == '__main__':
