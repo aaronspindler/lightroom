@@ -17,6 +17,20 @@ import config
 WAIT_TIME = 2
 
 
+def img_hash(img, hashsize=8):
+    # convert the image to grayscale so the hash is only on one channel
+    opencv_image = cv2.cvtColor(numpy.array(img), cv2.COLOR_RGB2BGR)
+    gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
+    # resize the input image, adding a single column (width) so we
+    # can compute the horizontal gradient
+    resized = cv2.resize(gray, (hashsize + 1, hashsize))
+    # compute the (relative) horizontal gradient between adjacent
+    # column pixels
+    diff = resized[:, 1:] > resized[:, :-1]
+    # convert the difference image to a hash
+    return sum([2 ** i for (i, v) in enumerate(diff.flatten()) if v])
+
+
 def variance_of_laplacian(image):
     # compute the Laplacian of the image and then return the focus
     # measure, which is simply the variance of the Laplacian
@@ -49,7 +63,7 @@ def variance_of_laplacian_quadrants(image):
     return avg
 
 
-def load_img_for_model(img):
+def preprocess_img_for_ml_model(img):
     img = img.resize((299, 299), PIL.Image.ANTIALIAS)
     img_np = np.array(img).astype(np.float32)
     return img_np, img
@@ -97,8 +111,10 @@ def main():
     num_images = int(countlabel.split(' ')[2])
     print(f'Found {num_images} images')
 
+    num_blurred = 0
+
     for _ in range(num_images):
-        time.sleep(0.5)
+        time.sleep(0.25)
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
@@ -110,17 +126,25 @@ def main():
             response = s.get(img_src)
 
             pil_img = Image.open(BytesIO(response.content)).convert('RGB')
+            print(img_hash(pil_img))
 
             # Make Prediction with Ml model
-            _, img = load_img_for_model(pil_img)
+            _, img = preprocess_img_for_ml_model(pil_img)
             prediction_result = model.predict({'image': img})
             print(f'{prediction_result.get("classLabel")} with a probability of {round(prediction_result.get("classLabelProbs").get(prediction_result.get("classLabel")),2)*100}%')
+
+            if prediction_result.get('classLabel') == 'blurred':
+                num_blurred += 1
+                driver.find_element_by_xpath('//*[@id="sneaky-loupe-flag"]/div[2]').click()  # Click the flag as reject button
+                print(f'{num_blurred} flagged as Blurred')
 
             # Make decision based on V o l quadrants
             quadrants = variance_of_laplacian_quadrants(pil_img)
 
             # Make decision based on V o l
             vol = variance_of_laplacian(pil_img)
+
+            # print(f'Quads: {quadrants} VoL: {vol}')
             descriptor = ''
             if vol < 100:
                 descriptor = 'BLUR'
