@@ -126,14 +126,14 @@ def main():
     images = {}
 
     print('Started processing images')
-    #for _ in range(num_images):
-    for _ in range(100):
+    # for _ in range(num_images):
+    for _ in range(200):
         num_processed += 1
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
         if play_icon.get_attribute('style') != 'display: none;':
-            print('VIDEO')
+            pass  # Pass since it is a video and we don't process videos
         else:
             img = div_tag.find_element_by_tag_name('img')
             img_src = img.get_attribute('src')
@@ -146,20 +146,18 @@ def main():
             hash = img_hash(pil_img)
             if hash in images:
                 num_duplicate += 1
-                #driver.find_element_by_xpath('//*[@id="sneaky-loupe-rating"]/div/div[1]').click()  # Click the 1 star button so I can find duplicates
-                print(f'{num_duplicate} flagged as duplicate')
+                # driver.find_element_by_xpath('//*[@id="sneaky-loupe-rating"]/div/div[1]').click()  # Click the 1 star button so I can find duplicates
             else:
                 images[hash] = pil_img
 
             # Make Prediction with Ml model
             _, img = preprocess_img_for_ml_model(pil_img)
             prediction_result = model.predict({'image': img})
-            print(f'{prediction_result.get("classLabel")} with a probability of {round(prediction_result.get("classLabelProbs").get(prediction_result.get("classLabel")),2)*100}%')
+            print(f'{prediction_result.get("classLabel"):11s} {round(prediction_result.get("classLabelProbs").get(prediction_result.get("classLabel")), 2) * 100:6.2f}%')
 
             if prediction_result.get('classLabel') == 'blurred':
                 num_blurred += 1
-                #driver.find_element_by_xpath('//*[@id="sneaky-loupe-flag"]/div[2]').click()  # Click the flag as reject button
-                print(f'{num_blurred} flagged as Blurred')
+                # driver.find_element_by_xpath('//*[@id="sneaky-loupe-flag"]/div[2]').click()  # Click the flag as reject button
 
             # Make decision based on V o l quadrants
             quadrants = variance_of_laplacian_quadrants(pil_img)
@@ -176,7 +174,8 @@ def main():
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
 
     time_end = time.time()
-    print(f'Processed {num_processed} images in {round(time_end - time_start, 2)} seconds')
+    time_elapsed = round(time_end - time_start, 2)
+    print(f'Processed {num_processed} images in {time_elapsed} seconds ({num_processed / time_elapsed} img/s)')
 
     print(f'{num_blurred} blurry pictures')
     print(f'{num_duplicate} duplicate pictures')
