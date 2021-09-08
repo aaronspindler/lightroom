@@ -70,13 +70,16 @@ def preprocess_img_for_ml_model(img):
 
 
 def main():
+    print('lightroom-blur')
     # Load the Image Model
     model = ct.models.MLModel('BlurDetection.mlmodel')
+    print('Loaded ML model')
 
     # Setup the web driver
     driver = webdriver.Safari()
     driver.get('https://lightroom.adobe.com/signin')
     driver.set_window_size(2000, 1200)
+    print('Loaded webdriver')
 
     time.sleep(WAIT_TIME)
 
@@ -89,6 +92,7 @@ def main():
     password_field = driver.find_element_by_xpath('//*[@id="PasswordPage-PasswordField"]')
     password_field.send_keys(config.LIGHTROOM_PASSWORD)
     continue_button = driver.find_element_by_xpath('//*[@id="PasswordForm"]/section[2]/div[2]/button/span').click()
+    print('Finished login process')
     time.sleep(WAIT_TIME * 2)
     enable_cookies_button = driver.find_element_by_xpath('//*[@id="onetrust-accept-btn-handler"]').click()
     time.sleep(WAIT_TIME)
@@ -102,20 +106,29 @@ def main():
 
     # Set requests cookies from webdriver
     s = requests.Session()
+    session_counter = 0
     for cookie in driver.get_cookies():
+        session_counter += 1
         s.cookies.set(cookie['name'], cookie['value'])
+    print(f'Set {session_counter} cookies')
 
     # Loop through the catalog of images
     # Find the number of images
+    time.sleep(WAIT_TIME)
     countlabel = driver.find_element_by_class_name('countlabel').text
     num_images = int(countlabel.split(' ')[2])
     print(f'Found {num_images} images')
 
+    time_start = time.time()
+    num_processed = 0
     num_blurred = 0
     num_duplicate = 0
     images = {}
 
-    for _ in range(num_images):
+    print('Started processing images')
+    #for _ in range(num_images):
+    for _ in range(100):
+        num_processed += 1
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
@@ -161,6 +174,9 @@ def main():
                 # pil_img.save(f'/Users/aaronspindler/Desktop/lightroom-blur/images/blur/{uuid.uuid4().hex}.jpg', 'JPEG') # Saves the blurry image to a folder with unique filename
 
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
+
+    time_end = time.time()
+    print(f'Processed {num_processed} images in {round(time_end - time_start, 2)} seconds')
 
     print(f'{num_blurred} blurry pictures')
     print(f'{num_duplicate} duplicate pictures')
