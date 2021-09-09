@@ -64,7 +64,9 @@ def variance_of_laplacian_quadrants(image):
 
 
 def preprocess_img_for_ml_model(img):
-    img = img.resize((299, 299), PIL.Image.ANTIALIAS)
+    #img = img.resize((299, 299), PIL.Image.NEAREST)  # Best Speed
+    img = img.resize((299, 299), PIL.Image.LANCZOS)  # Best Quality
+
     img_np = np.array(img).astype(np.float32)
     return img_np, img
 
@@ -127,14 +129,14 @@ def main():
 
     print('Started processing images')
     # for _ in range(num_images):
-    for _ in range(200):
-        num_processed += 1
+    for _ in range(1000):
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
         if play_icon.get_attribute('style') != 'display: none;':
             pass  # Pass since it is a video and we don't process videos
         else:
+            num_processed += 1
             img = div_tag.find_element_by_tag_name('img')
             img_src = img.get_attribute('src')
             response = s.get(img_src)
@@ -175,7 +177,7 @@ def main():
 
     time_end = time.time()
     time_elapsed = round(time_end - time_start, 2)
-    print(f'Processed {num_processed} images in {time_elapsed} seconds ({num_processed / time_elapsed} img/s)')
+    print(f'Processed {num_processed} images in {time_elapsed} seconds ({round(num_processed / time_elapsed, 2)} img/s)')
 
     print(f'{num_blurred} blurry pictures')
     print(f'{num_duplicate} duplicate pictures')
