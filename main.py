@@ -94,6 +94,10 @@ def main():
     password_field = driver.find_element_by_xpath('//*[@id="PasswordPage-PasswordField"]')
     password_field.send_keys(config.LIGHTROOM_PASSWORD)
     continue_button = driver.find_element_by_xpath('//*[@id="PasswordForm"]/section[2]/div[2]/button/span').click()
+    try:
+        driver.find_element_by_xpath('//*[@id="App"]/div/div/section/div/div/section/div/section/div/div/section/footer/div/button/span').click() # Look for a 'Want to sign in without your password?' screen and then clck 'Skip and Continue'
+    except:
+        pass
     print('Finished login process')
     time.sleep(WAIT_TIME * 2)
     enable_cookies_button = driver.find_element_by_xpath('//*[@id="onetrust-accept-btn-handler"]').click()
@@ -128,12 +132,12 @@ def main():
     images = {}
 
     print('Started processing images')
-    # for _ in range(num_images):
-    for _ in range(1000):
+    for _ in range(num_images):
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
         if play_icon.get_attribute('style') != 'display: none;':
+            print(f'{"video":11s} {round(1.00, 2) * 100:6.2f}%')
             pass  # Pass since it is a video and we don't process videos
         else:
             num_processed += 1
@@ -173,6 +177,7 @@ def main():
                 descriptor = 'BLUR'
                 # pil_img.save(f'/Users/aaronspindler/Desktop/lightroom-blur/images/blur/{uuid.uuid4().hex}.jpg', 'JPEG') # Saves the blurry image to a folder with unique filename
 
+        # Press the right key to move to the next image
         driver.find_element_by_xpath('/html/body/sp-theme').send_keys(Keys.RIGHT)
 
     time_end = time.time()
