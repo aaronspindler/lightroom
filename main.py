@@ -1,5 +1,6 @@
 import time
 import uuid
+import config
 from io import BytesIO
 
 import PIL
@@ -11,8 +12,6 @@ import requests
 from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-
-import config
 
 WAIT_TIME = 2
 
