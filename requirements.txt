@@ -5,7 +5,7 @@ chardet==4.0.0
 coremltools==5.0b2
 idna==2.10
 mpmath==1.2.1
-numpy==1.19.5
+numpy==1.21.0
 opencv-python==4.5.2.54
 packaging==21.0
 Pillow==9.0.0
