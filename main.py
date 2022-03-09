@@ -66,7 +66,6 @@ def variance_of_laplacian_quadrants(image):
 def preprocess_img_for_ml_model(img):
     #img = img.resize((299, 299), PIL.Image.NEAREST)  # Best Speed
     img = img.resize((299, 299), PIL.Image.LANCZOS)  # Best Quality
-
     img_np = np.array(img).astype(np.float32)
     return img_np, img
 
@@ -111,6 +110,7 @@ def main():
     time.sleep(WAIT_TIME)
 
     # Set requests cookies from webdriver
+    # These allow us to access the current photo directly from a python web request
     s = requests.Session()
     session_counter = 0
     for cookie in driver.get_cookies():
@@ -125,6 +125,7 @@ def main():
     num_images = int(countlabel.split(' ')[2])
     print(f'Found {num_images} files')
 
+    # initialize some stats
     time_start = time.time()
     num_processed = 0
     num_blurred = 0
@@ -132,7 +133,8 @@ def main():
     images = {}
 
     print('Started processing images')
-    for _ in range(num_images):
+    # for _ in range(num_images):
+    for _ in range(200):
         # Find the correct image
         div_tag = driver.find_element_by_class_name('ze-active')
         play_icon = div_tag.find_element_by_class_name('play')
