@@ -4,7 +4,7 @@ attrs==21.2.0
 certifi==2021.5.30
 cffi==1.15.0
 chardet==4.0.0
-coremltools==5.0b2
+coremltools==5.2.0
 cryptography==36.0.1
 h11==0.13.0
 idna==2.10

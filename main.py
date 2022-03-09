@@ -123,7 +123,7 @@ def main():
     time.sleep(WAIT_TIME)
     countlabel = driver.find_element_by_class_name('countlabel').text
     num_images = int(countlabel.split(' ')[2])
-    print(f'Found {num_images} images')
+    print(f'Found {num_images} files')
 
     time_start = time.time()
     num_processed = 0
@@ -138,7 +138,7 @@ def main():
         play_icon = div_tag.find_element_by_class_name('play')
         if play_icon.get_attribute('style') != 'display: none;':
             print(f'{"video":11s} {round(1.00, 2) * 100:6.2f}%')
-            pass  # Pass since it is a video and we don't process videos
+            pass  # Pass since it is a video, and we don't process videos
         else:
             num_processed += 1
             img = div_tag.find_element_by_tag_name('img')
