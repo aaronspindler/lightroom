@@ -13,7 +13,7 @@ numpy==1.22.3
 opencv-python==4.5.5.64
 outcome==1.1.0
 packaging==21.0
-Pillow==9.0.1
+Pillow==9.3.0
 protobuf==3.18.3
 pycparser==2.21
 pyOpenSSL==22.0.0
