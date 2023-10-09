@@ -9,6 +9,7 @@ __pycache__/
 .idea
 .idea/
 adobe-lightroom/config.py
+adobe_lightroom_config.py
 
 # C extensions
 *.so
