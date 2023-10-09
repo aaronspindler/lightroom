@@ -3,7 +3,7 @@ import uuid
 from common.calculations import variance_of_laplacian, variance_of_laplacian_quadrants
 from common.hash import img_hash
 from common.preprocess import preprocess_img_for_ml_model
-import config
+import adobe_lightroom_config as config
 from io import BytesIO
 
 import coremltools as ct
