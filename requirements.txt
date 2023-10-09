@@ -47,7 +47,7 @@ protobuf==3.18.3
 ptpython==3.0.23
 py-applescript==1.0.3
 pycparser==2.21
-Pygments==2.14.0
+Pygments==2.15.0
 pyobjc-core==9.0.1
 pyobjc-framework-AppleScriptKit==9.0.1
 pyobjc-framework-AppleScriptObjC==9.0.1
