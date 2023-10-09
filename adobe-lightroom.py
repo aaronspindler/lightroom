@@ -2,11 +2,10 @@ import time
 import uuid
 from common.calculations import variance_of_laplacian, variance_of_laplacian_quadrants
 from common.hash import img_hash
+from common.ml import load_model, predict
 from common.preprocess import preprocess_img_for_ml_model
 import adobe_lightroom_config as config
 from io import BytesIO
-
-import coremltools as ct
 
 import requests
 from PIL import Image
@@ -19,7 +18,7 @@ WAIT_TIME = 2
 def main():
     print('lightroom-blur')
     # Load the Image Model
-    model = ct.models.MLModel('../common/BlurDetection.mlmodel')
+    model = load_model()
     print('Loaded ML model')
 
     # Setup the web driver
@@ -106,7 +105,7 @@ def main():
 
             # Make Prediction with Ml model
             _, img = preprocess_img_for_ml_model(pil_img)
-            prediction_result = model.predict({'image': img})
+            prediction_result = predict(model, img)
             print(f'{prediction_result.get("classLabel"):11s} {round(prediction_result.get("classLabelProbs").get(prediction_result.get("classLabel")), 2) * 100:6.2f}%')
 
             if prediction_result.get('classLabel') == 'blurred':
