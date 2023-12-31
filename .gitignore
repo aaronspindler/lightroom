@@ -14,6 +14,9 @@ adobe_lightroom_config.py
 # C extensions
 *.so
 
+# media
+media/
+
 # Distribution / packaging
 .Python
 build/
