@@ -20,7 +20,7 @@ coremltools==5.2.0
 Django==4.2.21
 cryptography==44.0.1
 docutils==0.19
-h11==0.13.0
+h11==0.16.0
 idna==2.10
 importlib-metadata==6.1.0
 jaraco.classes==3.2.3
