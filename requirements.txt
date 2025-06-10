@@ -21,7 +21,7 @@ Django==4.2.22
 cryptography==44.0.1
 docutils==0.19
 h11==0.13.0
-idna==2.10
+idna==3.7
 importlib-metadata==6.1.0
 jaraco.classes==3.2.3
 jedi==0.18.2
