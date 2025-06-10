@@ -101,4 +101,4 @@ wsproto==1.1.0
 wurlitzer==3.0.3
 xattr==0.10.1
 xdg==5.1.1
-zipp==3.15.0
+zipp==3.19.1
