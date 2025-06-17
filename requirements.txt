@@ -45,7 +45,7 @@ photoscript==0.3.0
 Pillow==10.3.0
 pkginfo==1.9.6
 prompt-toolkit==3.0.38
-protobuf==3.18.3
+protobuf==4.25.8
 ptpython==3.0.23
 py-applescript==1.0.3
 pycparser==2.21
