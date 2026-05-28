@@ -1,2 +1,1 @@
-# Lightroom Blur
-## Automatically clean up blurry photos
+# Migrated to [PhotonFolio](https://photonfolio.com)
